@@ -3,7 +3,20 @@ import json
 import hashlib
 
 def checkAccount(email: str) -> None:
-    # The api point with the email that we would like to check for
+    """
+    Check and print whether an email address has been compromised.
+
+    The method calls the api to check if it has been comprimised and if so, the
+    number of times. It then prints out the appropriate output.
+
+    Parameters
+    ----------
+    email : str
+        The email address that we require to be checked.
+
+    """
+
+    # The api endpoint with the email that we would like to check for
     url = 'https://haveibeenpwned.com/api/v2/breachedaccount/' + email + '?truncateResponse=true'
 
     # Specify the user agent as required by the API
@@ -19,12 +32,31 @@ def checkAccount(email: str) -> None:
         data = response.json()
         print('You have a total of ' + str(len(data)) + ' breach(es).')
         print('The websites that were breached are:')
-        print(*data)
+        # Iterate through the list
+        for each in data:
+            # Each breach is stored as a dictionary
+            print(each["Name"])
     # Else if there were no breaches
     else:
         print('Congrats! You have no breaches asscoiated with ' + email)
 
 def checkPassword(password: str) -> None:
+    """
+    Check and print whether a password has been compromised.
+
+    The method calls the api to check if it has been comprimised and if so, the
+    number of times. We only send the first 5 chars of the hashed (SHA-1)
+    password to maintain security. Upon receiving a list of hashed passwords
+    that starts with those 5 chars, we search for our password. The method finally
+    then prints out the appropriate output.
+
+    Parameters
+    ----------
+    password : str
+        The password that we require to be checked.
+
+    """
+
     # Encode the password and then hash it using sha1
     hash = hashlib.sha1(password.encode('utf-8'))
 
@@ -48,6 +80,26 @@ def checkPassword(password: str) -> None:
         print('Uh oh! Your password has been comprimised. It appears in ' + str(numOfTimes) + ' records.')
 
 def __comparePasswords(hashedPass: str, apiResponse: str) -> int:
+    """
+    A helper method to check for the number of times a password appears in the API response.
+
+    This method does some string processing as the API response is not in an appropriate JSON
+    format. Therefore, we have to trim some special chars.
+
+    Parameters
+    ----------
+    hashedPass : str
+        The SHA-1 hashed password that we are checking for.
+    apiResponse : str
+        A string containing all the passwords whose first 5 chars match ours.
+
+    Returns
+    -------
+    int
+        The number of times our password appeared.
+
+    """
+
     # The number of times the password appeared
     numOfTimes: int = 0
 
